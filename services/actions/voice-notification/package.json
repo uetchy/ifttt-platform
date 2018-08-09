@@ -1,0 +1,13 @@
+{
+  "name": "voice-notification",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "Yasuaki Uechi <y@uechi.io> (https://uechi.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "google-home-notifier": "github:noelportugal/google-home-notifier"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ifttt-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "Yasuaki Uechi <y@uechi.io> (https://uechi.io/)",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3",
+    "glob": "^7.1.2",
+    "uuid": "^3.3.2"
+  }
+}

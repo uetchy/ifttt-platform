@@ -1,0 +1,15 @@
+[Unit]
+Description=IFTTT Service
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/ifttt/
+ExecStart=/usr/bin/node /home/pi/ifttt/server.js
+Restart=on-failure
+RestartSec=10
+KillMode=process
+User=pi
+
+[Install]
+WantedBy=multi-user.target

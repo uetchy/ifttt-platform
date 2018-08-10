@@ -1,14 +1,29 @@
-# IFTTT Service
+<div style="text-align: center">
+  <h1>ifttt-platform</h1>
+</div>
 
-## Quick Guide
+## Installation
 
+```bash
+npm install -g ifttt-platform
+# or
+yarn add --global ifttt-platform
 ```
-npm install
-npm start
+
+## Usage
+
+### Writing `action` for IFTTT service
+
+```js
+exports.default = async (query) => {
+  const { text } = query.actionFields
+}
 ```
 
-## Install on Ubuntu
+## Writing `trigger`
 
-```
-systemd/install.sh
+```js
+exports.default = async (query) => {
+
+}
 ```

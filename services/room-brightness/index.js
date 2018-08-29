@@ -3,7 +3,7 @@ const NatureRemo = require('nature-remo')
 module.exports = {
   name: 'Brighten Up',
   slug: 'brighten_up',
-  perform: async query => {
+  trigger: async query => {
     const { threshold } = query.triggerFields
     const client = new NatureRemo.Cloud(process.env.NATURE_REMO_CLOUD_API_TOKEN)
     const devices = await client.getDevices()

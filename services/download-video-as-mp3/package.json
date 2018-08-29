@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {},
-  "keywords": [],
+  "keywords": [
+    "ifttt",
+    "ifttt-action"
+  ],
   "author": "Yasuaki Uechi <y@uechi.io> (https://uechi.io/)",
   "license": "MIT",
   "dependencies": {}

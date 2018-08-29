@@ -4,7 +4,7 @@ const exec = promisify(require('child_process').exec)
 module.exports = {
   name: 'Download Video as MP3',
   slug: 'download_video_as_mp3',
-  perform: async query => {
+  action: async query => {
     const { url } = query.actionFields
     console.log(url)
 

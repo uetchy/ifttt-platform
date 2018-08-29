@@ -3,7 +3,7 @@ const { chromeCast } = require('./util/chrome-cast')
 module.exports = {
   name: 'Voice Notification',
   slug: 'voice_notification',
-  perform: async query => {
+  action: async query => {
     const { text, language } = query.actionFields
 
     if (!text) {

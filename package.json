@@ -2,16 +2,25 @@
   "name": "ifttt-service",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
+  "main": "bin/server.js",
+  "bin": {
+    "ifttt-service": "bin/cli.js"
   },
-  "keywords": [],
+  "scripts": {
+    "start": "node bin/server.js"
+  },
+  "keywords": [
+    "ifttt"
+  ],
   "author": "Yasuaki Uechi <y@uechi.io> (https://uechi.io/)",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.18.3",
+    "chalk": "^2.4.1",
     "express": "^4.16.3",
     "glob": "^7.1.2",
+    "listr": "^0.14.1",
+    "minimist": "^1.2.0",
     "uuid": "^3.3.2"
   }
 }

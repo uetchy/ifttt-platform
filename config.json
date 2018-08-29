@@ -1,0 +1,4 @@
+{
+  "actions": ["download-video-as-mp3", "voice-notification"],
+  "triggers": ["room-brightness"]
+}

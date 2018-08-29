@@ -8,7 +8,11 @@ exports.chromeCast = async function(text, language = 'ja') {
     console.log('Searching ChromeCast devices', googleHomeDeviceIP)
     console.log(language)
 
-    googlehome.ip(googleHomeDeviceIP, language)
+    try {
+      googlehome.ip(googleHomeDeviceIP, language)
+    } catch (err) {
+      return reject('cannot find Google Home device')
+    }
     //googlehome.device(googleHomeDeviceName, language)
 
     if (!text) {

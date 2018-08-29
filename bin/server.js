@@ -2,16 +2,36 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const glob = require('glob')
 const uuid = require('uuid/v1')
+const path = require('path')
 
-const serverPort = process.env.HOME_SERVICE_PORT // incoming port
+const serverPort = process.env.IFTTT_SERVICE_PORT || 8091 // incoming port
 
-const actions = glob.sync('./services/actions/*').map(file => require(file))
-const triggers = glob.sync('./services/triggers/*').map(file => require(file))
+function searchForPlugin(name) {
+  let plugin = ''
+  try {
+    return require(name)
+  } catch (err) {
+    return require(path.join('../services', name))
+  }
+}
+
+// Load config
+const actions = []
+const triggers = []
+
+const userConfig = require('../config.json')
+for (const index in userConfig.actions) {
+  actions.push(searchForPlugin(userConfig.actions[index]))
+}
+for (const index in userConfig.triggers) {
+  triggers.push(searchForPlugin(userConfig.triggers[index]))
+}
 console.log('[actions]')
 actions.map(i => console.log('-', i.name, '(', i.slug, ')'))
 console.log('[triggers]')
 triggers.map(i => console.log('-', i.name, '(', i.slug, ')'))
 
+// Initialize server
 const app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
@@ -27,7 +47,7 @@ app.post('/ifttt/v1/actions/:slug', async function(request, response) {
   for (const action of actions) {
     if (slug === action.slug) {
       try {
-        const res = await action.perform(request.body)
+        const res = await action.action(request.body)
         return response.json({ success: true, response: res })
       } catch (err) {
         return response.json({ success: false, response: err.message })
@@ -49,7 +69,7 @@ app.post('/ifttt/v1/triggers/:slug', async function(request, response) {
   for (const trigger of triggers) {
     if (slug === trigger.slug) {
       try {
-        const res = await trigger.perform(request.body)
+        const res = await trigger.trigger(request.body)
         return response.json({
           data: [
             Object.assign({}, res, {

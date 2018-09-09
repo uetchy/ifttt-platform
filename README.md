@@ -1,19 +1,19 @@
 <div style="text-align: center">
-  <h1>ifttt-platform</h1>
+  <h1>Ifso</h1>
 </div>
 
 ## Installation
 
 ```bash
-npm install -g ifttt-platform
+npm install -g ifso
 # or
-yarn add --global ifttt-platform
+yarn add --global ifso
 ```
 
 ## Usage
 
 ```bash
-npx ifttt-platform server
+npx ifso server
 ```
 
 ### Writing `action` for IFTTT service

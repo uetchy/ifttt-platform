@@ -15,78 +15,90 @@ function searchForPlugin(name) {
   }
 }
 
-// Load config
-const actions = []
-const triggers = []
+function findAction(slug) {
+  return actions.find(action => action.slug === slug)
+}
 
-const userConfig = require('../config.json')
-for (const index in userConfig.actions) {
-  actions.push(searchForPlugin(userConfig.actions[index]))
+function loadConfig() {
+  const userConfig = require('../config.json')
+
+  let actions = []
+  for (const index in userConfig.actions) {
+    actions.push(searchForPlugin(userConfig.actions[index]))
+  }
+
+  let triggers = []
+  for (const index in userConfig.triggers) {
+    triggers.push(searchForPlugin(userConfig.triggers[index]))
+  }
+
+  console.debug('[actions]')
+  actions.map(i => console.debug('-', i.name, '(', i.slug, ')'))
+  console.debug('[triggers]')
+  triggers.map(i => console.debug('-', i.name, '(', i.slug, ')'))
+
+  return [actions, triggers]
 }
-for (const index in userConfig.triggers) {
-  triggers.push(searchForPlugin(userConfig.triggers[index]))
+
+function checkService(req, res, next) {
+  const serviceKey = req.headers['ifttt-service-key']
+  if (!serviceKey || serviceKey !== process.env.IFTTT_SERVICE_KEY) {
+    res.json({ success: false, error: 'invalid service key given' })
+  } else {
+    next()
+  }
 }
-console.log('[actions]')
-actions.map(i => console.log('-', i.name, '(', i.slug, ')'))
-console.log('[triggers]')
-triggers.map(i => console.log('-', i.name, '(', i.slug, ')'))
+
+// Load config
+const [actions, triggers] = loadConfig()
 
 // Initialize server
 const app = express()
+
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
-app.post('/ifttt/v1/actions/:slug', async function(request, response) {
-  const serviceKey = request.headers['ifttt-service-key']
-  if (!serviceKey || serviceKey !== process.env.IFTTT_SERVICE_KEY) {
-    return response.json({ success: false, error: 'invalid service key given' })
+app.post('/ifttt/v1/actions/:slug', checkService, async function(
+  request,
+  response
+) {
+  const action = findAction(request.params.slug)
+  if (!action) {
+    return response.json({ success: false, error: 'no associated slug' })
   }
 
-  const slug = request.params.slug
-
-  for (const action of actions) {
-    if (slug === action.slug) {
-      try {
-        const res = await action.action(request.body)
-        return response.json({ success: true, response: res })
-      } catch (err) {
-        return response.json({ success: false, response: err.message })
-      }
-    }
+  try {
+    const res = await action.action(request.body)
+    return response.json({ success: true, response: res })
+  } catch (err) {
+    return response.json({ success: false, response: err.message })
   }
-
-  response.json({ success: false, error: 'no associated slug' })
 })
 
-app.post('/ifttt/v1/triggers/:slug', async function(request, response) {
-  const serviceKey = request.headers['ifttt-service-key']
-  if (!serviceKey || serviceKey !== process.env.IFTTT_SERVICE_KEY) {
-    return response.json({ success: false, error: 'invalid service key given' })
+app.post('/ifttt/v1/triggers/:slug', checkService, async function(
+  request,
+  response
+) {
+  const { slug } = request.params
+  const trigger = triggers.find(trigger => trigger.slug === slug)
+  if (!trigger) {
+    return response.json({ success: false, error: 'no associated slug' })
   }
 
-  const slug = request.params.slug
+  let data = []
+  try {
+    const res = await trigger.trigger(request.body)
+    data = [
+      Object.assign({}, res, {
+        meta: {
+          id: uuid(),
+          timestamp: Date.now(),
+        },
+      }),
+    ]
+  } catch (err) {}
 
-  for (const trigger of triggers) {
-    if (slug === trigger.slug) {
-      try {
-        const res = await trigger.trigger(request.body)
-        return response.json({
-          data: [
-            Object.assign({}, res, {
-              meta: {
-                id: uuid(),
-                timestamp: Date.now(),
-              },
-            }),
-          ],
-        })
-      } catch (err) {
-        return response.json({ data: [] })
-      }
-    }
-  }
-
-  response.json({ success: false, error: 'no associated slug' })
+  return response.json({ success: true, data })
 })
 
 app.listen(serverPort, async () => {

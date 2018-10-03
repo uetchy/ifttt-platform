@@ -1,10 +1,22 @@
 const { chromeCast } = require('./util/chrome-cast')
 
 module.exports = {
-  name: 'Voice Notification',
-  slug: 'voice_notification',
-  action: async query => {
-    const { text, language } = query.actionFields
+  slug: 'voice-notification',
+  meta: {
+    name: 'Voice Notification',
+    params: [
+      {
+        name: 'text',
+        description: 'Text to translate',
+      },
+      {
+        name: 'language',
+        description: 'Target language',
+      },
+    ],
+  },
+  action: async ({ actionFields }) => {
+    const { text, language } = actionFields
 
     if (!text) {
       throw new Error('no text given')

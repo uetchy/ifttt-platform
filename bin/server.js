@@ -3,39 +3,58 @@ const bodyParser = require('body-parser')
 const glob = require('glob')
 const uuid = require('uuid/v1')
 const path = require('path')
+const findPackageJson = require('find-package-json')
 
 const serverPort = process.env.IFTTT_SERVICE_PORT || 8091 // incoming port
+// const development = process.env.NODE_ENV !== 'production'
 
 function searchForPlugin(name) {
   let plugin = ''
   try {
-    return require(name)
+    const action = require(name)
+    const pkg = findPackageJson(name).next().value
+    return {
+      action,
+      description: pkg.description,
+    }
   } catch (err) {
-    return require(path.join('../services', name))
+    return undefined
   }
 }
 
 function findAction(slug) {
-  return actions.find(action => action.slug === slug)
+  return actions.find(action => action.action.slug === slug)
 }
 
 function loadConfig() {
   const userConfig = require('../config.json')
 
   let actions = []
-  for (const index in userConfig.actions) {
-    actions.push(searchForPlugin(userConfig.actions[index]))
+  for (const actionName of userConfig.actions) {
+    const actionPackageName = actionName.startsWith('ifso-')
+      ? actionName
+      : `ifso-${actionName}`
+    const plugin = searchForPlugin(actionPackageName)
+    if (plugin) {
+      actions.push(plugin)
+    }
   }
 
   let triggers = []
-  for (const index in userConfig.triggers) {
-    triggers.push(searchForPlugin(userConfig.triggers[index]))
+  for (const triggerName of userConfig.triggers) {
+    const triggerPackageName = triggerName.startsWith('ifso-')
+      ? triggerName
+      : `ifso-${triggerName}`
+    const plugin = searchForPlugin(triggerPackageName)
+    if (plugin) {
+      triggers.push(plugin)
+    }
   }
 
   console.debug('[actions]')
-  actions.map(i => console.debug('-', i.name, '(', i.slug, ')'))
+  actions.map(i => console.debug('-', i.action.slug))
   console.debug('[triggers]')
-  triggers.map(i => console.debug('-', i.name, '(', i.slug, ')'))
+  triggers.map(i => console.debug('-', i.action.slug))
 
   return [actions, triggers]
 }
@@ -64,11 +83,14 @@ app.post('/ifttt/v1/actions/:slug', checkService, async function(
 ) {
   const action = findAction(request.params.slug)
   if (!action) {
-    return response.json({ success: false, error: 'no associated slug' })
+    return response.json({
+      success: false,
+      error: 'no associated action found',
+    })
   }
 
   try {
-    const res = await action.action(request.body)
+    const res = await action.action.action(request.body)
     return response.json({ success: true, response: res })
   } catch (err) {
     return response.json({ success: false, response: err.message })
@@ -82,7 +104,10 @@ app.post('/ifttt/v1/triggers/:slug', checkService, async function(
   const { slug } = request.params
   const trigger = triggers.find(trigger => trigger.slug === slug)
   if (!trigger) {
-    return response.json({ success: false, error: 'no associated slug' })
+    return response.json({
+      success: false,
+      error: 'no associated trigger found',
+    })
   }
 
   let data = []
@@ -99,6 +124,11 @@ app.post('/ifttt/v1/triggers/:slug', checkService, async function(
   } catch (err) {}
 
   return response.json({ success: true, data })
+})
+
+app.use(function(err, req, res, next) {
+  res.status(500)
+  res.json({ err: err.message })
 })
 
 app.listen(serverPort, async () => {

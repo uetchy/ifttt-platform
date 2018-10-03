@@ -19,8 +19,8 @@ npx ifso server
 ### Writing `action` for IFTTT service
 
 ```js
-exports.default = async query => {
-  const { text } = query.actionFields
+exports.default = async ({ actionFields }) => {
+  const { text } = actionFields
   console.log(`received: ${text}`)
 }
 ```

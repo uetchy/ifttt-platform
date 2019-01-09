@@ -1,11 +1,11 @@
 [Unit]
-Description=IFTTT Service
+Description=Custom IFTTT Service
 After=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/pi/ifttt/
-ExecStart=/usr/bin/node /home/pi/ifttt/server.js
+WorkingDirectory={{ROOT_DIR}}
+ExecStart=/usr/bin/node {{ROOT_DIR}}/server.js
 Restart=on-failure
 RestartSec=10
 KillMode=process

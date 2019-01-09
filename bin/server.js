@@ -6,7 +6,6 @@ const path = require('path')
 const findPackageJson = require('find-package-json')
 
 const serverPort = process.env.IFTTT_SERVICE_PORT || 8091 // incoming port
-// const development = process.env.NODE_ENV !== 'production'
 
 function searchForPlugin(name) {
   let plugin = ''
@@ -26,7 +25,7 @@ function findAction(slug) {
   return actions.find(action => action.action.slug === slug)
 }
 
-function loadConfig() {
+function loadActionsAndTriggers() {
   const userConfig = require('../config.json')
 
   let actions = []
@@ -53,13 +52,14 @@ function loadConfig() {
 
   console.debug('[actions]')
   actions.map(i => console.debug('-', i.action.slug))
+
   console.debug('[triggers]')
   triggers.map(i => console.debug('-', i.action.slug))
 
   return [actions, triggers]
 }
 
-function checkService(req, res, next) {
+function verifyServiceKey(req, res, next) {
   const serviceKey = req.headers['ifttt-service-key']
   if (!serviceKey || serviceKey !== process.env.IFTTT_SERVICE_KEY) {
     res.json({ success: false, error: 'invalid service key given' })
@@ -69,7 +69,7 @@ function checkService(req, res, next) {
 }
 
 // Load config
-const [actions, triggers] = loadConfig()
+const [actions, triggers] = loadActionsAndTriggers()
 
 // Initialize server
 const app = express()
@@ -77,7 +77,8 @@ const app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
-app.post('/ifttt/v1/actions/:slug', checkService, async function(
+// actions endpoint
+app.post('/ifttt/v1/actions/:slug', verifyServiceKey, async function(
   request,
   response
 ) {
@@ -97,7 +98,8 @@ app.post('/ifttt/v1/actions/:slug', checkService, async function(
   }
 })
 
-app.post('/ifttt/v1/triggers/:slug', checkService, async function(
+// triggers endpoint
+app.post('/ifttt/v1/triggers/:slug', verifyServiceKey, async function(
   request,
   response
 ) {
@@ -126,11 +128,10 @@ app.post('/ifttt/v1/triggers/:slug', checkService, async function(
   return response.json({ success: true, data })
 })
 
+// handle errors
 app.use(function(err, req, res, next) {
   res.status(500)
   res.json({ err: err.message })
 })
 
-app.listen(serverPort, async () => {
-  console.log('Listening:', serverPort)
-})
+module.exports = app

@@ -1,6 +1,6 @@
-<div style="text-align: center">
-  <h1>Ifso</h1>
-</div>
+<h1 align="center">
+  Ifso
+</h1>
 
 ## Installation
 

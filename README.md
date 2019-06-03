@@ -35,5 +35,5 @@ exports.default = new Promise((resolve, reject) => {
 ## Writing `trigger`
 
 ```js
-exports.default = async query => {}
+exports.default = async (query) => {}
 ```

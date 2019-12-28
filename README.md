@@ -20,20 +20,20 @@ npx ifso server
 
 ```js
 exports.default = async ({ actionFields }) => {
-  const { text } = actionFields
-  console.log(`received: ${text}`)
-}
+  const { text } = actionFields;
+  console.log(`received: ${text}`);
+};
 ```
 
 ```js
 exports.default = new Promise((resolve, reject) => {
-  const { text } = query.actionFields
-  console.log(`received: ${text}`)
-})
+  const { text } = query.actionFields;
+  console.log(`received: ${text}`);
+});
 ```
 
 ## Writing `trigger`
 
 ```js
-exports.default = async (query) => {}
+exports.default = async query => {};
 ```
